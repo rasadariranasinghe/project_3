@@ -16,7 +16,8 @@ function modCT() {
     // Save the modified data back to the GeoJSON file
     fs.writeFileSync(censusTractGeoJSON, JSON.stringify(data));
     
-    console.log('GeoJSON file updated successfully.');    
+    console.log('GeoJSON file updated successfully.');
+    return data;   
 };
 
 // Steps for accessing the server and the Database
@@ -25,31 +26,6 @@ import { MongoClient } from 'mongodb';
 const uri = 'mongodb://localhost:27017/'; // Connection URI
 const dbName = 'COVID_and_Crime_Toronto'; // Database Name
 const client = new MongoClient(uri); // Create a new MongoClient
-
-// Function for creating the remaining collections
-async function createCollection(collectionName) {
-    try {        
-        const database = client.db(dbName); // Access the database
-        console.log(`Connected to MongoDB server and ${dbName} Database`);
-        await database.createCollection(collectionName); // Create the collection
-        console.log(`Collection '${collectionName}' created successfully.`);
-    } catch (error) {
-        console.error('An error occurred:', error);
-    };
-};
-
-// Function for importing data into the collections
-async function insertData(data, collectionName) {
-    try {        
-        const db = client.db(dbName); // Access the database
-        console.log(`Connected to MongoDB server and ${dbName} Database`);
-        const collection = db.collection(collectionName); // Access the Collection
-        const result = await collection.insertMany(data); // Insert the data into the Collection
-        console.log(`${result.insertedCount} documents inserted`);
-    } catch (error) {
-        console.error('An error occurred:', error);
-    } 
-};
 
 // Steps to getting the crime data by making multiple API requests, dumping the features array of each request into an array, which will get inserted later to a collection in COVID_and_Crime_Toronto Mongo Database.
 const baseURL = 'https://services.arcgis.com/S9th0jAJ7bqgIRjw/ArcGIS/rest/services/Major_Crime_Indicators_Open_Data/FeatureServer/0/query';
@@ -77,39 +53,48 @@ const getRequest = async (url, params = {}) => {
 
 // Function for dumping all the JSON data from each API request into a single JSON array.
 async function dumpToJSON() {
-    await getRequest(baseURL, params); // make the initial API call.
-    let isThereMoreData = get.hasOwnProperty('properties'); // check if there is more data from the API call that was not received due to the transfer limit of 2000 entries per call
-
-    let jsonArray = []; // The JSON Array to which all the API JSON data will be dumped
-    let offsetVal = 0; // The incrementing value to offset the next API call by to get the rest of the data
-    params.resultRecordCount = 2000; // Set this as a param for the other API calls.
+    let isThereMoreData; // Declare variable for checking if there is more data from the API call that was not received due to the transfer limit of 2000 entries per call.
+    let jsonArray = []; // The JSON Array to which all the API JSON data will be dumped.
+    let offsetVal = 0; // The incrementing value to offset the next API call by to get the rest of the data.
+    params.resultRecordCount = 2000; // Create this parameter for declaring the number of results to transfer per API call, and set it to the transfer limit of 2000.
     do {
+        await getRequest(baseURL, params); // make the API call.
         jsonArray.push(...get.features); // Dump the features array from the current API call by merging it into jsonArray.
-        offsetVal += 2000; // Increment the offset before making the next API call.
-        console.log(`${offsetVal} or so results have been collected...Proceeding to next batch`);
-        params.resultOffset = offsetVal; // Create the resultOffset parameter and/or set its value to be offsetVal.
-        await getRequest(baseURL, params); // make the next API call.
+        console.log(`${jsonArray.length} results have been collected...Proceeding to next batch`);
         isThereMoreData = get.hasOwnProperty('properties'); // check whether there is more data to get and dump with another API call.
+        offsetVal += 2000; // Increment the offset before making the next API call.
+        params.resultOffset = offsetVal; // Create the resultOffset parameter and/or set its value to be offsetVal.
     } while (isThereMoreData);
     console.log(`All ${jsonArray.length} results have been collected`);
     return jsonArray;
 };
 
-// Running all the functions to finish Database setup
+// Running all the functions to perform the Database Setup
 async function run() {
     try {
         await client.connect(); // Connect to the MongoDB server
-        
-        let collectionName = 'Crime_Data';
-        let data = await dumpToJSON(); // Get all the Crime Data from the API
         const db = client.db(dbName); // Access the database
-        console.log(`Connected to MongoDB server and ${dbName} Database`);
+        console.log(`Connected to MongoDB server and accessed ${dbName} Database`);
+
+        let collectionName = 'Census_Tract_Boundaries'; // Set the collection name.
+        let data = modCT(); // Modify the Data with the function and get the returned JSON Array from it.
+
         await db.createCollection(collectionName); // Create the collection
-        let collection = db.collection(collectionName); // Access the Collection
-        let result = await collection.insertMany(data); // Insert the data into the Collection
+        var collection = db.collection(collectionName); // Access the Collection
+        var result = await collection.insertMany(data); // Insert the data into the Collection
+        console.log(`${result.insertedCount} documents inserted`);
+        // Census_Tract_Boundaries Collection Setup Complete
+        console.log(`${collectionName} Collection Setup Complete`);
+        
+        collectionName = 'Crime_Data';  // Set the collection name
+        data = await dumpToJSON(); // Get all the Crime Data from the API
+
+        await db.createCollection(collectionName); // Create the collection
+        collection = db.collection(collectionName); // Access the Collection
+        result = await collection.insertMany(data); // Insert the data into the Collection
         console.log(`${result.insertedCount} documents inserted`);
         // Crime_Data Collection Setup Complete
-        console.log(collection.find());
+        console.log(`${collectionName} Collection Setup Complete`);
     } catch (error) {
         console.error('An error occurred:', error);
     } finally {
