@@ -1,22 +1,3 @@
-// Create a map object
-let map = L.map('map', {
-  zoom: 11,
-  maxZoom: 11,
-  center: [43.65107, -79.347015],
-  layers: [streetMap, crimeDataTime],
-  timeDimension: true,
-  timeDimensionOptions: {
-      timeInterval: "2017-01-01T12:00:00Z/2022-12-31T24:00:00Z",
-      period: "PT1H"
-  },
-  timeDimensionControl: true,
-});
-
-// Create the base map layer
-let streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
 // Function to determine marker color based on crime type
 function markerColor(crime) {
   return crime === 'Assault' ? "#ff5f65" :
@@ -46,13 +27,32 @@ d3.json("data/TorontoCrime_Data.json").then(function (data) {
     onEachFeature: function (feature, layer) {
             layer.bindPopup(`<h2>${feature.properties.MCI_CATEGORY}</h2><hr><h3>${feature.properties.OCC_YEAR}</h3><h3>${feature.properties.OCC_MONTH}</h3><hr><h4>Location: ${feature.properties.LOCATION_TYPE}</h4>`);
           }
-        }).addTo(map);
+        });
 
   // Create and add a TimeDimension Layer to the map
   let crimeDataTime = L.timeDimension.layer.geoJson(crimeData, {
     updateTimeDimension: true,
     updateTimeDimensionMode: "replace",
     duration: "PT1S"
+  });
+
+  // Create the base map layer
+  let streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  });
+
+  // Create a map object
+  let map = L.map('map', {
+    zoom: 11,
+    maxZoom: 11,
+    center: [43.65107, -79.347015],
+    layers: [streetMap, crimeDataTime],
+    timeDimension: true,
+    timeDimensionOptions: {
+        timeInterval: "2017-01-01T12:00:00Z/2022-12-31T24:00:00Z",
+        period: "PT1H"
+    },
+    timeDimensionControl: true,
   });
 
   // Create baseMaps object
