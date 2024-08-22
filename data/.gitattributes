@@ -1,2 +1,0 @@
-COVID19_cases.json filter=lfs diff=lfs merge=lfs -text
-Neighbourhoods-historical_140-4326.geojson filter=lfs diff=lfs merge=lfs -text
