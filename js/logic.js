@@ -4,6 +4,7 @@ function markerColor(crime) {
          crime === 'Robbery' ? "#fca35d" :
          crime === 'Break and Enter' ? "#fdb72a" :
          crime === 'Auto Theft' ? "#f7db11" :
+         crime === 'Theft Over' ? "#a3a3c2" :
          "#98ee00";  // Default color for other crimes
 }
 
@@ -17,7 +18,7 @@ d3.json("data/TorontoCrime_Data.json").then(function (data) {
   let crimeData = L.geoJson(data, {
     pointToLayer: function (geoJsonPoint, latlng) {
       return L.circleMarker(latlng, {
-        radius: 2,  // Adjust radius as needed
+        radius: 4,  // Adjust radius as needed
         fillColor: markerColor(geoJsonPoint.properties.MCI_CATEGORY),
         color: "black",
         weight: 1,
