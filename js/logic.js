@@ -28,6 +28,7 @@ d3.json("data/TorontoCrime_Data.json").then(function (data) {
     onEachFeature: function (feature, layer) {
             layer.bindPopup(`<h2>${feature.properties.MCI_CATEGORY}</h2><hr><h3>${feature.properties.OCC_YEAR}</h3><h3>${feature.properties.OCC_MONTH}</h3><hr><h4>Location: ${feature.properties.LOCATION_TYPE}</h4>`);
           }
+
         });
 
   // Create and add a TimeDimension Layer to the map
