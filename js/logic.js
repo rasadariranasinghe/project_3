@@ -12,7 +12,9 @@ function markerColor(crime) {
 d3.json("https://storage.googleapis.com/mmetwalli-data/TorontoCrime_Data.json").then(function (data) {
 
   // Add a time field for the Time Dimension Layer to find the time of the feature
-  data.forEach((feat) => {feat.properties.time = new Date(feat.properties.OCC_DATE);});
+  data.forEach((feat) => {feat.properties.time = new Date(feat.properties.OCC_DATE);
+    console.log(feat.properties.time);
+  });
 
   // Create a GeoJSON layer for crime data
   let crimeData = L.geoJson(data, {
@@ -45,8 +47,9 @@ d3.json("https://storage.googleapis.com/mmetwalli-data/TorontoCrime_Data.json").
 
   // Create a map object
   let map = L.map('map', {
+    fullscreenControl: true,
     zoom: 11,
-    maxZoom: 11,
+    minZoom: 11,
     center: [43.65107, -79.347015],
     layers: [streetMap, crimeDataTime],
     timeDimension: true,
