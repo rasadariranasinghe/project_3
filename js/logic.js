@@ -9,7 +9,7 @@ function markerColor(crime) {
 }
 
 // Fetch the crime data
-d3.json("data/TorontoCrime_Data.json").then(function (data) {
+d3.json("https://storage.googleapis.com/mmetwalli-data/TorontoCrime_Data.json").then(function (data) {
 
   // Add a time field for the Time Dimension Layer to find the time of the feature
   data.forEach((feat) => {feat.properties.time = new Date(feat.properties.OCC_DATE);});
