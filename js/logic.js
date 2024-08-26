@@ -6,35 +6,73 @@ function markerColor(crime) {
          crime === 'Auto Theft' ? "#f7db11" :
          crime === 'Theft Over' ? "#a3a3c2" :
          "#98ee00";  // Default color for other crimes
-}
+};
 
-// Fetch the crime data
-d3.json("https://storage.googleapis.com/mmetwalli-data/TorontoCrime_Data.json").then(function (data) {
+// Function for getting the data in the collections into an array after adding a time field to the properties field.
+let crimeDataArray = [];
+async function getCrimeData(crimeColl) {
+  const findCrimeData = crimeColl.find({}); // Make a find operation to get the crime data from the database.
+  for await (const crime of findCrimeData) {
+    // Set a new time field for each entry in the database for the TimeDimensions to easily find the times.
+    crime.properties.time = new Date(crime.properties.OCC_DATE).setHours(crime.properties.OCC_HOUR);
+    crimeDataArray.push(crime);// Add the entry into the array
+  };
+};
 
-  // Add a time field for the Time Dimension Layer to find the time of the feature
-  data.forEach((feat) => {feat.properties.time = new Date(feat.properties.OCC_DATE);
-    console.log(feat.properties.time);
-  });
+// API URL for calling the server function to collect crime data, modify the data for visualization purposes, and then provide an JSON Array of the data.
+const getCrimeDataURL = "https://data.mongodb-api.com/app/application-0-lzefcjx/endpoint/getCrimeDataforMapping";
+// API URL for calling the server function to collect covid data, merge it with census tract border data, modify the data for visualization purposes, and then provide an JSON Array of the data.
+const getCOVIDDataURL = "";
 
+let crimeData; // The variable for storing the JSON Array of crime data.
+let covidData; // The variable for storing the JSON Array of covid data.
+// Function that calls the API GET requests with the base URL and then given params and getting the JSON data.
+const getRequest = async (url) => {
+  let options = {
+      method: 'GET',
+      redirect: 'follow'
+  };
+  try {
+    const response = await fetch(url, options);
+    return await response.json();
+  } catch (error) {
+      console.error(error);
+      return null;
+  };
+};
+
+// Function for connecting to the server and then  all the functions to perform the Database Setup.
+async function run() {
+  try {
+      crimeData = await getRequest(getCrimeDataURL); // Get the Crime Data into the array
+      crimeData.forEach((crime) => {crime.properties.time = new Date(crime.properties.time);}); // Convert the times in the time parameter to Date objects
+      console.log(crimeData);
+      buildMap();
+  } catch (error) {
+      console.error('An error occurred:', error);
+  };
+};
+run().catch(console.dir);
+
+//Build Map Function
+function buildMap() {
   // Create a GeoJSON layer for crime data
-  let crimeData = L.geoJson(data, {
+  let crimeLayer = L.geoJson(crimeData, {
     pointToLayer: function (geoJsonPoint, latlng) {
       return L.circleMarker(latlng, {
         radius: 4,  // Adjust radius as needed
-        fillColor: markerColor(geoJsonPoint.properties.MCI_CATEGORY),
+        fillColor: "black",
         color: "black",
         weight: 1,
         fillOpacity: 0.75
       });
     },
     onEachFeature: function (feature, layer) {
-            layer.bindPopup(`<h2>${feature.properties.MCI_CATEGORY}</h2><hr><h3>${feature.properties.OCC_YEAR}</h3><h3>${feature.properties.OCC_MONTH}</h3><hr><h4>Location: ${feature.properties.LOCATION_TYPE}</h4>`);
+            layer.bindPopup(`<h2>${feature.properties.MCI_CATEGORIES.join(", ")}</h2><hr><h3>${feature.properties.time}</h3><hr><h4>Location: ${feature.properties.LOCATION_TYPE}</h4>`);
           }
+  });
 
-        });
-
-  // Create and add a TimeDimension Layer to the map
-  let crimeDataTime = L.timeDimension.layer.geoJson(crimeData, {
+  let crimeDataTime = L.timeDimension.layer.geoJson(crimeLayer, {
     updateTimeDimension: true,
     updateTimeDimensionMode: "replace",
     duration: "PT1S"
@@ -47,7 +85,6 @@ d3.json("https://storage.googleapis.com/mmetwalli-data/TorontoCrime_Data.json").
 
   // Create a map object
   let map = L.map('map', {
-    fullscreenControl: true,
     zoom: 11,
     minZoom: 11,
     center: [43.65107, -79.347015],
@@ -72,16 +109,4 @@ d3.json("https://storage.googleapis.com/mmetwalli-data/TorontoCrime_Data.json").
 
   // Add control layers
   L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
-});
-
-// var wmsUrl = "https://thredds.socib.es/thredds/wms/observational/hf_radar/hf_radar_ibiza-scb_codarssproc001_aggregation/dep0001_hf-radar-ibiza_scb-codarssproc001_L1_agg.nc"
-// var wmsLayer = L.tileLayer.wms(wmsUrl, {
-//     layers: 'sea_water_velocity',
-//     format: 'image/png',
-//     transparent: true,
-//     attribution: 'SOCIB HF RADAR | sea_water_velocity'
-// });
-
-// // Create and add a TimeDimension Layer to the map
-// var tdWmsLayer = L.timeDimension.layer.wms(wmsLayer);
-// tdWmsLayer.addTo(map);
+};
