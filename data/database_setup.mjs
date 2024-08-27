@@ -76,13 +76,22 @@ async function run() {
         const db = client.db(dbName); // Access the database
         console.log(`Connected to MongoDB server and accessed ${dbName} Database`);
 
-        
-        let collectionName = 'Crime_Data';  // Set the collection name
-        let data = await dumpToJSON(); // Get all the Crime Data from the API
+        let collectionName = 'Census_Tract_Boundaries'; // Set the collection name.
+        let data = modCT(); // Modify the Data with the function and get the returned JSON Array from it.
 
         await db.createCollection(collectionName); // Create the collection
-        let collection = db.collection(collectionName); // Access the Collection
-        let result = await collection.insertMany(data); // Insert the data into the Collection
+        var collection = db.collection(collectionName); // Access the Collection
+        var result = await collection.insertMany(data); // Insert the data into the Collection
+        console.log(`${result.insertedCount} documents inserted`);
+        // Census_Tract_Boundaries Collection Setup Complete
+        console.log(`${collectionName} Collection Setup Complete`);
+        
+        collectionName = 'Crime_Data';  // Set the collection name
+        data = await dumpToJSON(); // Get all the Crime Data from the API
+
+        await db.createCollection(collectionName); // Create the collection
+        collection = db.collection(collectionName); // Access the Collection
+        result = await collection.insertMany(data); // Insert the data into the Collection
         console.log(`${result.insertedCount} documents inserted`);
         // Crime_Data Collection Setup Complete
         console.log(`${collectionName} Collection Setup Complete`);
