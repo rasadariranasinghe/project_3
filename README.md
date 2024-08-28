@@ -22,8 +22,7 @@ https://open.toronto.ca/dataset/covid-19-cases-in-toronto/[Toronto Police Servic
 
 ## Visualizations
 The project includes visualizations such as:
-- Heatmaps showing the density of crimes across different neighborhoods.
-- Time series plots illustrating the changes in crime rates over the months.
+- Time series plots illustrating the changes in crime rates over time.
 - Bar charts comparing the types of crimes before and during the pandemic.
 
 ## Results
