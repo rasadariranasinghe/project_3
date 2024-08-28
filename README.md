@@ -14,6 +14,17 @@ https://open.toronto.ca/dataset/neighbourhoods/
 www.toronto.ca/city-government/data-research-maps/neighbourhoods-communities/neighbourhood-profiles/about-toronto-neighbourhoods/
 https://open.toronto.ca/dataset/covid-19-cases-in-toronto/[Toronto Police Service Public Safety Data Portal](https://data.torontopolice.on.ca/). It includes records of various types of crimes committed in Toronto between 2020 and 2021.
 
+## Code
+Some of the code used in this project was obtained from:
+*File system | Node.js v18.1.0 Documentation*. (n.d.). Nodejs.org. <https://nodejs.org/api/fs.html>
+
+MongoDB. (2024). *What are the Atlas Application Services?* Mongodb.com. <https://www.mongodb.com/docs/atlas/app-services/>
+
+peterm. (2015, April 15). *Importing GeoJSON data into MongoDB | petermcmillan.com*. Petermcmillan.com. <https://www.petermcmillan.com/content/importing-geojson-data-mongodb>
+
+Raboy, N. (2022, November 4). *Build a Totally Serverless REST API with MongoDB Atlas | MongoDB*. Mongodb.com. <https://www.mongodb.com/developer/products/atlas/build-totally-serverless-rest-api-mongodb-atlas/>
+
+Tran, J. (2021, March 2). *How to Send GET and POST Requests with JavaScript Fetch API*. Medium; Meta Box. <https://medium.com/meta-box/how-to-send-get-and-post-requests-with-javascript-fetch-api-d0685b7ee6ed>
 
 ## Methodology
 - **Data Cleaning**: The data was cleaned to remove any inconsistencies or irrelevant information.
